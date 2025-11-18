@@ -2,6 +2,7 @@ package com.finalyear.hikemanagementapp.data
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
@@ -13,7 +14,8 @@ import androidx.room.PrimaryKey
             childColumns = ["hikeId"],
             onDelete = ForeignKey.CASCADE
         )
-    ]
+    ],
+    indices = [Index(value = ["hikeId"])]
 )
 data class Observation(
     @PrimaryKey(autoGenerate = true)
