@@ -46,7 +46,7 @@ class HikeFormActivity : AppCompatActivity() {
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
-            val imageBitmap = result.data?.extras?.get("data") as? Bitmap
+            val imageBitmap = result.data?.extras?.getParcelable("data", Bitmap::class.java)
             imageBitmap?.let {
                 savePhoto(it)
             }
@@ -200,6 +200,7 @@ class HikeFormActivity : AppCompatActivity() {
         }
     }
 
+    @Suppress("DEPRECATION")
     private fun getCurrentLocation() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return
