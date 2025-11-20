@@ -64,6 +64,12 @@
             android:name=".MapActivity"
             android:exported="false"
             android:parentActivityName=".HikeDetailActivity" />
+        
+        <activity
+            android:name=".PhotoViewerActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.NoActionBar"
+            android:parentActivityName=".HikeDetailActivity" />
 
         <provider
             android:name="androidx.core.content.FileProvider"

@@ -38,11 +38,18 @@ An Android application for managing hiking trips with features for tracking hike
   - Time of observation (defaults to current date/time)
 - Optional fields:
   - Additional comments
+  - Photo attachments (multiple photos per observation)
 - Multiple observations per hike
 - View all observations for a hike
 - Edit observations
 - Delete observations
 - All observations stored in SQLite database
+- **Photo Attachments:**
+  - Take photos with camera or select from gallery
+  - Multiple photos per observation
+  - Thumbnails displayed in observation list
+  - Full-screen photo viewer with swipe and zoom
+  - Photos stored in app-specific external files directory
 
 ### Part D - Search (10%)
 - Simple search by name (searches as you type)
@@ -84,10 +91,11 @@ An Android application for managing hiking trips with features for tracking hike
 ### Permissions
 
 The app requires the following permissions:
-- **Camera:** For taking photos of hikes
+- **Camera:** For taking photos of hikes and observations
 - **Location:** For automatic location detection
 - **Internet & Network State:** For downloading OpenStreetMap tiles
-- **Storage:** For saving photos (Android 12 and below)
+- **Storage (Android 12 and below):** For saving photos
+- **READ_MEDIA_IMAGES (Android 13+):** For accessing photos from gallery
 
 These permissions are requested at runtime when needed.
 
@@ -107,9 +115,10 @@ app/src/main/java/com/finalyear/hikemanagementapp/
 ├── MainActivity.kt             # Main activity (hike list)
 ├── HikeFormActivity.kt         # Hike entry/edit form
 ├── HikeDetailActivity.kt       # Hike details view
-├── ObservationFormActivity.kt  # Observation entry/edit form
+├── ObservationFormActivity.kt  # Observation entry/edit form with photo support
 ├── SearchActivity.kt           # Search functionality
-└── MapActivity.kt              # OpenStreetMap (osmdroid) integration
+├── MapActivity.kt              # OpenStreetMap (osmdroid) integration
+└── PhotoViewerActivity.kt      # Full-screen photo viewer
 ```
 
 ## Database Schema
@@ -135,6 +144,7 @@ app/src/main/java/com/finalyear/hikemanagementapp/
 - `observation` (Required)
 - `observedAt` (Required, timestamp)
 - `comments` (Optional)
+- `photoUris` (Optional, comma-separated list of photo file paths)
 
 ## Usage
 
@@ -159,15 +169,24 @@ app/src/main/java/com/finalyear/hikemanagementapp/
    - Open hike details
    - Click "Add Observation"
    - Enter observation details
+   - Optionally add photos (camera or gallery)
+   - Tap photo thumbnails to view full-screen
    - Save
 
-5. **Search:**
+5. **View and Manage Photos:**
+   - In observation form: thumbnails shown horizontally
+   - In observation list: first photo shown as thumbnail
+   - Tap any photo to open full-screen viewer
+   - In viewer: swipe left/right, pinch to zoom
+   - Remove photos in edit mode
+
+6. **Search:**
    - Click search icon in menu
    - Enter search terms
    - Use advanced search for multiple criteria
    - Click on result to view details
 
-6. **View on Map:**
+7. **View on Map:**
    - Open hike details
    - Click "View on Map" (if location data available)
    - Hike location will be marked on map
@@ -179,6 +198,58 @@ app/src/main/java/com/finalyear/hikemanagementapp/
 - OpenStreetMap tiles require an active internet connection for the first load and are cached for reuse
 - All data is stored locally on the device
 - Database can be reset from the menu (deletes all hikes)
+
+## Photo Storage Details
+
+- **Storage Location:** Photos are stored in app-specific external files directory under `Pictures/`
+- **File Format:** JPEG with 85% compression
+- **Naming Convention:** `OBS_YYYYMMDD_HHMMSS_[UUID].jpg`
+- **Persistence:** Photo file paths are stored in the database as comma-separated strings
+- **Cleanup:** Photos are automatically deleted when their associated observation is deleted
+- **Migration:** Existing observations without photos are compatible with the new schema
+
+## Database Migration
+
+The app uses Room database version 2 with the following migration:
+- **Version 1 → 2:** Adds `photoUris` column to observations table
+- Existing data is preserved during migration
+- New installations start with version 2
+
+## Manual QA Testing Steps
+
+### Camera Flow
+1. Open or create an observation
+2. Tap "Take Photo" button
+3. Grant camera permission if prompted
+4. Take a photo with the device camera
+5. Photo should appear as thumbnail in horizontal list
+6. Tap thumbnail to view full-screen
+7. Verify swipe and zoom work in viewer
+8. Save observation
+9. Verify photo persists after reopening
+
+### Gallery Flow
+1. Open or create an observation
+2. Tap "Choose from Gallery" button
+3. Grant storage/media permission if prompted (Android 13+)
+4. Select a photo from gallery
+5. Photo should appear as thumbnail
+6. Verify photo persists after save
+
+### Photo Management
+1. Add multiple photos to an observation
+2. Tap X button on thumbnail to remove
+3. Verify removed photos are deleted
+4. Edit observation with photos
+5. Add/remove photos and save
+6. Delete observation
+7. Verify all photos are cleaned up
+
+### Permissions
+1. Test on Android 13+ device: READ_MEDIA_IMAGES permission
+2. Test on Android 12 and below: READ_EXTERNAL_STORAGE permission
+3. Test permission denial and re-request flow
+4. Verify rationale dialogs appear appropriately
 
 ## Technologies Used
 
@@ -200,9 +271,10 @@ Possible improvements:
 - Share hikes with other users
 - Add weather API integration
 - Track hike statistics
-- Add photos to observations
 - Offline map support
 - Social features
+- Video attachments for observations
+- Voice notes for observations
 
 ## License
 

@@ -1,5 +1,6 @@
 package com.finalyear.hikemanagementapp.adapter
 
+import android.content.Intent
 import android.graphics.BitmapFactory
 import android.view.LayoutInflater
 import android.view.View
@@ -9,6 +10,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.finalyear.hikemanagementapp.PhotoViewerActivity
 import com.finalyear.hikemanagementapp.R
 import com.finalyear.hikemanagementapp.data.Observation
 import java.io.File
@@ -59,6 +61,14 @@ class ObservationAdapter(
                     val bitmap = BitmapFactory.decodeFile(firstPhotoPath)
                     imageViewPhoto.setImageBitmap(bitmap)
                     imageViewPhoto.visibility = View.VISIBLE
+                    
+                    // Open photo viewer when clicked
+                    imageViewPhoto.setOnClickListener {
+                        val intent = Intent(itemView.context, PhotoViewerActivity::class.java)
+                        intent.putExtra("photo_uris", observation.photoUris.toTypedArray())
+                        intent.putExtra("photo_index", 0)
+                        itemView.context.startActivity(intent)
+                    }
                 } else {
                     imageViewPhoto.visibility = View.GONE
                 }
