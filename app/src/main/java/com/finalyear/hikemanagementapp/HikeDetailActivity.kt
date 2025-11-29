@@ -20,6 +20,11 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
+/**
+ * Activity for displaying detailed information about a hike.
+ * Shows all hike attributes including photo and location, lists associated observations,
+ * and provides options to edit, delete, add observations, or view the hike on a map.
+ */
 class HikeDetailActivity : AppCompatActivity() {
     private lateinit var binding: ActivityHikeDetailBinding
     private lateinit var database: HikeDatabase
@@ -27,6 +32,14 @@ class HikeDetailActivity : AppCompatActivity() {
     private lateinit var observationAdapter: ObservationAdapter
     private val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
 
+    /**
+     * Called when the activity is first created.
+     * Initializes the UI components, sets up the observation adapter,
+     * configures button click listeners, and loads hike and observation data.
+     *
+     * @param savedInstanceState If the activity is being re-initialized after previously
+     *        being shut down, this contains the most recent data. Otherwise, it is null.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityHikeDetailBinding.inflate(layoutInflater)
@@ -98,6 +111,10 @@ class HikeDetailActivity : AppCompatActivity() {
         loadObservations()
     }
 
+    /**
+     * Loads the hike data from the database.
+     * Retrieves the hike by ID and displays it using displayHike.
+     */
     private fun loadHike() {
         lifecycleScope.launch {
             database.hikeDao().getHikeById(hikeId)?.let { hike ->
@@ -106,6 +123,14 @@ class HikeDetailActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Displays the hike information in the UI.
+     * Populates all text views with hike data and shows optional fields
+     * only if they have values. Displays the photo if available and
+     * shows the map button if location coordinates exist.
+     *
+     * @param hike The Hike object containing the data to display.
+     */
     private fun displayHike(hike: Hike) {
         binding.textViewDetailName.text = hike.name
         binding.textViewDetailLocation.text = "Location: ${hike.location}"
@@ -144,6 +169,10 @@ class HikeDetailActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Loads observations for the current hike from the database.
+     * Uses a Flow to continuously update the adapter when observations change.
+     */
     private fun loadObservations() {
         lifecycleScope.launch {
             database.observationDao().getObservationsForHike(hikeId).collectLatest { observations ->
@@ -152,6 +181,11 @@ class HikeDetailActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Shows a confirmation dialog for deleting the hike.
+     * When confirmed, deletes the hike from the database (which also cascades
+     * to delete all associated observations) and finishes the activity.
+     */
     private fun showDeleteHikeDialog() {
         AlertDialog.Builder(this)
             .setTitle("Delete Hike")
@@ -168,6 +202,12 @@ class HikeDetailActivity : AppCompatActivity() {
             .show()
     }
 
+    /**
+     * Shows a confirmation dialog for deleting an observation.
+     * When confirmed, deletes the observation from the database.
+     *
+     * @param observation The observation to delete.
+     */
     private fun showDeleteObservationDialog(observation: Observation) {
         AlertDialog.Builder(this)
             .setTitle("Delete Observation")
@@ -181,12 +221,23 @@ class HikeDetailActivity : AppCompatActivity() {
             .show()
     }
 
+    /**
+     * Called when the activity resumes from a paused state.
+     * Reloads the hike and observations to ensure data is up-to-date
+     * after returning from edit activities.
+     */
     override fun onResume() {
         super.onResume()
         loadHike()
         loadObservations()
     }
 
+    /**
+     * Handles the up navigation button press in the action bar.
+     * Finishes the activity and returns to the previous screen.
+     *
+     * @return true to indicate the navigation was handled.
+     */
     override fun onSupportNavigateUp(): Boolean {
         finish()
         return true
