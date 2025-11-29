@@ -30,6 +30,12 @@ import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
 
+/**
+ * Activity for creating and editing hike entries.
+ * Allows users to input hike details including name, location, date, parking availability,
+ * length, difficulty, and optional fields like description, weather, and group size.
+ * Supports capturing photos and getting current GPS location.
+ */
 class HikeFormActivity : AppCompatActivity() {
     private lateinit var binding: ActivityHikeFormBinding
     private lateinit var database: HikeDatabase
@@ -42,6 +48,10 @@ class HikeFormActivity : AppCompatActivity() {
     private val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
     private var selectedDate: Long = System.currentTimeMillis()
 
+    /**
+     * Activity result launcher for capturing photos.
+     * Handles the result from the camera intent and saves the captured photo.
+     */
     private val takePictureLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -53,6 +63,10 @@ class HikeFormActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Activity result launcher for requesting permissions.
+     * Handles the result of camera and location permission requests.
+     */
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
@@ -69,6 +83,14 @@ class HikeFormActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Called when the activity is first created.
+     * Initializes the UI components, sets up spinners and date picker,
+     * configures button click listeners, and loads existing hike data if editing.
+     *
+     * @param savedInstanceState If the activity is being re-initialized after previously
+     *        being shut down, this contains the most recent data. Otherwise, it is null.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityHikeFormBinding.inflate(layoutInflater)
@@ -112,6 +134,10 @@ class HikeFormActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Sets up click listeners for parking and difficulty fields as dropdown selectors.
+     * Shows a selection dialog when the field is clicked.
+     */
     private fun setupSpinners() {
         // Parking spinner
         val parkingOptions = arrayOf("Yes", "No")
@@ -130,6 +156,11 @@ class HikeFormActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Sets up the date picker dialog for the hike date field.
+     * Shows a DatePickerDialog when the date field is clicked and updates
+     * the selected date and text field when a date is chosen.
+     */
     private fun setupDatePicker() {
         binding.editTextDate.setOnClickListener {
             val calendar = Calendar.getInstance()
@@ -150,6 +181,13 @@ class HikeFormActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Shows a selection dialog with a list of options.
+     *
+     * @param title The title to display in the dialog.
+     * @param options Array of options to display.
+     * @param onSelected Callback function called when an option is selected.
+     */
     private fun showSelectionDialog(title: String, options: Array<String>, onSelected: (String) -> Unit) {
         AlertDialog.Builder(this)
             .setTitle(title)
@@ -159,6 +197,11 @@ class HikeFormActivity : AppCompatActivity() {
             .show()
     }
 
+    /**
+     * Requests camera permission if not already granted.
+     * If permission is granted, proceeds to take a photo.
+     * Otherwise, requests the permission from the user.
+     */
     private fun requestCameraPermission() {
         when {
             ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED -> {
@@ -170,11 +213,22 @@ class HikeFormActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Launches the camera intent to capture a photo.
+     * The result is handled by takePictureLauncher.
+     */
     private fun takePhoto() {
         val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         takePictureLauncher.launch(takePictureIntent)
     }
 
+    /**
+     * Saves the captured photo bitmap to external storage.
+     * Creates an images directory if it doesn't exist and saves the photo as a JPEG file.
+     * Updates the photoPath and displays the image in the preview.
+     *
+     * @param bitmap The bitmap image to save.
+     */
     private fun savePhoto(bitmap: Bitmap) {
         val imagesDir = File(getExternalFilesDir(null), "images")
         if (!imagesDir.exists()) {
@@ -189,6 +243,11 @@ class HikeFormActivity : AppCompatActivity() {
         binding.imageViewPhoto.visibility = android.view.View.VISIBLE
     }
 
+    /**
+     * Requests fine location permission if not already granted.
+     * If permission is granted, proceeds to get the current location.
+     * Otherwise, requests the permission from the user.
+     */
     private fun requestLocationPermission() {
         when {
             ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED -> {
@@ -200,6 +259,12 @@ class HikeFormActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Gets the current GPS location using the fused location provider.
+     * Attempts to reverse geocode the coordinates to get an address.
+     * Updates the location field, latitude, and longitude with the result.
+     * Shows a toast message indicating success or failure.
+     */
     private fun getCurrentLocation() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return
@@ -229,6 +294,13 @@ class HikeFormActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Validates the required input fields in the hike form.
+     * Checks that name, location, parking, length, and difficulty are not empty,
+     * and that length is a valid number.
+     *
+     * @return true if all required fields are valid, false otherwise.
+     */
     private fun validateInput(): Boolean {
         val name = binding.editTextHikeName.text.toString().trim()
         val location = binding.editTextLocation.text.toString().trim()
@@ -266,6 +338,11 @@ class HikeFormActivity : AppCompatActivity() {
         return true
     }
 
+    /**
+     * Saves the hike to the database.
+     * Creates a new Hike object from form fields and either inserts or updates it
+     * based on whether hikeId is set. Finishes the activity after successful save.
+     */
     private fun saveHike() {
         val name = binding.editTextHikeName.text.toString().trim()
         val location = binding.editTextLocation.text.toString().trim()
@@ -319,6 +396,11 @@ class HikeFormActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Shows a preview dialog with all the hike details before saving.
+     * Displays a summary of all entered information and offers options
+     * to save or continue editing.
+     */
     private fun showPreviewDialog() {
         val name = binding.editTextHikeName.text.toString().trim()
         val location = binding.editTextLocation.text.toString().trim()
@@ -353,6 +435,11 @@ class HikeFormActivity : AppCompatActivity() {
             .show()
     }
 
+    /**
+     * Loads an existing hike from the database for editing.
+     * Populates all form fields with the hike data, displays the photo if available,
+     * and updates the action bar title to indicate edit mode.
+     */
     private fun loadHike() {
         lifecycleScope.launch {
             hikeId?.let { id ->
@@ -385,6 +472,12 @@ class HikeFormActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Handles the up navigation button press in the action bar.
+     * Finishes the activity and returns to the previous screen.
+     *
+     * @return true to indicate the navigation was handled.
+     */
     override fun onSupportNavigateUp(): Boolean {
         finish()
         return true

@@ -13,6 +13,11 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
+/**
+ * Activity for creating and editing observations associated with a hike.
+ * Allows users to input observation details, date/time, and optional comments.
+ * Supports both adding new observations and editing existing ones.
+ */
 class ObservationFormActivity : AppCompatActivity() {
     private lateinit var binding: ActivityObservationFormBinding
     private lateinit var database: HikeDatabase
@@ -21,6 +26,14 @@ class ObservationFormActivity : AppCompatActivity() {
     private val dateTimeFormat = SimpleDateFormat("dd MMM yyyy HH:mm", Locale.getDefault())
     private var selectedDateTime: Long = System.currentTimeMillis()
 
+    /**
+     * Called when the activity is first created.
+     * Initializes the UI components, retrieves hike and observation IDs from intent,
+     * sets up the date/time picker, and configures the save button.
+     *
+     * @param savedInstanceState If the activity is being re-initialized after previously
+     *        being shut down, this contains the most recent data. Otherwise, it is null.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityObservationFormBinding.inflate(layoutInflater)
@@ -55,6 +68,10 @@ class ObservationFormActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Loads and displays the name of the associated hike.
+     * Retrieves the hike from the database using the hikeId and updates the UI.
+     */
     private fun loadHikeName() {
         lifecycleScope.launch {
             database.hikeDao().getHikeById(hikeId)?.let { hike ->
@@ -63,6 +80,11 @@ class ObservationFormActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Sets up the date and time picker for the observation timestamp.
+     * Shows a date picker dialog first, then a time picker dialog.
+     * Updates the selected datetime and displays it in the text field.
+     */
     private fun setupDateTimePicker() {
         binding.editTextObservedAt.setOnClickListener {
             val calendar = Calendar.getInstance()
@@ -95,6 +117,12 @@ class ObservationFormActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Validates the user input for the observation form.
+     * Checks that the observation field is not empty.
+     *
+     * @return true if the input is valid, false otherwise.
+     */
     private fun validateInput(): Boolean {
         val observation = binding.editTextObservation.text.toString().trim()
 
@@ -106,6 +134,11 @@ class ObservationFormActivity : AppCompatActivity() {
         return true
     }
 
+    /**
+     * Saves the observation to the database.
+     * Creates a new observation or updates an existing one based on observationId.
+     * Finishes the activity after successful save.
+     */
     private fun saveObservation() {
         val observationText = binding.editTextObservation.text.toString().trim()
         val comments = binding.editTextComments.text.toString().trim().takeIf { it.isNotEmpty() }
@@ -137,6 +170,11 @@ class ObservationFormActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Loads an existing observation from the database for editing.
+     * Populates the form fields with the observation data and updates
+     * the action bar title to indicate edit mode.
+     */
     private fun loadObservation() {
         lifecycleScope.launch {
             observationId?.let { id ->
@@ -151,6 +189,12 @@ class ObservationFormActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Handles the up navigation button press in the action bar.
+     * Finishes the activity and returns to the previous screen.
+     *
+     * @return true to indicate the navigation was handled.
+     */
     override fun onSupportNavigateUp(): Boolean {
         finish()
         return true

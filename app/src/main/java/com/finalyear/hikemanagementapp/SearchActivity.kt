@@ -16,6 +16,11 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
+/**
+ * Activity for searching hikes with various filter criteria.
+ * Supports simple search by name/location and advanced search with
+ * filters for location, length range, and date range.
+ */
 class SearchActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySearchBinding
     private lateinit var database: HikeDatabase
@@ -24,6 +29,14 @@ class SearchActivity : AppCompatActivity() {
     private var fromDate: Long? = null
     private var toDate: Long? = null
 
+    /**
+     * Called when the activity is first created.
+     * Initializes the UI components, sets up the RecyclerView for search results,
+     * configures date pickers, and sets up click listeners for search and clear buttons.
+     *
+     * @param savedInstanceState If the activity is being re-initialized after previously
+     *        being shut down, this contains the most recent data. Otherwise, it is null.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySearchBinding.inflate(layoutInflater)
@@ -63,6 +76,11 @@ class SearchActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Sets up the date picker dialogs for the from and to date fields.
+     * When a date is selected, updates the corresponding timestamp and text field.
+     * For the end date, sets time to 23:59:59 to include the entire day in the range.
+     */
     private fun setupDatePickers() {
         binding.editTextFromDate.setOnClickListener {
             val calendar = Calendar.getInstance()
@@ -100,6 +118,11 @@ class SearchActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Performs a simple search by hike name or location.
+     * Searches for hikes where the name or location contains the search query.
+     * Shows a toast message if no results are found or if search term is empty.
+     */
     private fun performSimpleSearch() {
         val searchQuery = binding.editTextSearchName.text.toString().trim()
         if (searchQuery.isEmpty()) {
@@ -116,6 +139,12 @@ class SearchActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Performs an advanced search with multiple filter criteria.
+     * Filters hikes by name, location, length range (min/max), and date range.
+     * Empty filter fields are treated as wildcards (no restriction).
+     * Shows a toast message with the number of results found.
+     */
     private fun performAdvancedSearch() {
         val nameQuery = binding.editTextSearchName.text.toString().trim()
         val locationQuery = binding.editTextSearchLocation.text.toString().trim()
@@ -148,6 +177,11 @@ class SearchActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Clears all search fields and resets the search results.
+     * Resets text fields to empty strings, clears date selections,
+     * and clears the results list in the adapter.
+     */
     private fun clearSearch() {
         binding.editTextSearchName.setText("")
         binding.editTextSearchLocation.setText("")
@@ -160,6 +194,12 @@ class SearchActivity : AppCompatActivity() {
         hikeAdapter.submitList(emptyList())
     }
 
+    /**
+     * Handles the up navigation button press in the action bar.
+     * Finishes the activity and returns to the previous screen.
+     *
+     * @return true to indicate the navigation was handled.
+     */
     override fun onSupportNavigateUp(): Boolean {
         finish()
         return true

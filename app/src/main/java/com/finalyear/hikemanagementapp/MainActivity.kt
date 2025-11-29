@@ -18,11 +18,24 @@ import com.finalyear.hikemanagementapp.databinding.ActivityMainBinding
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
+/**
+ * Main activity of the Hike Management application.
+ * Displays a list of all hikes and provides navigation to add new hikes,
+ * search hikes, and reset the database.
+ */
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var database: HikeDatabase
     private lateinit var hikeAdapter: HikeAdapter
 
+    /**
+     * Called when the activity is first created.
+     * Initializes the UI components, sets up the RecyclerView with the hike adapter,
+     * and configures click listeners for the floating action button.
+     *
+     * @param savedInstanceState If the activity is being re-initialized after previously
+     *        being shut down, this contains the most recent data. Otherwise, it is null.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -55,6 +68,11 @@ class MainActivity : AppCompatActivity() {
         loadHikes()
     }
 
+    /**
+     * Loads all hikes from the database and updates the RecyclerView adapter.
+     * Uses coroutines to perform database operations asynchronously and
+     * collects the Flow of hikes to update the UI when data changes.
+     */
     private fun loadHikes() {
         lifecycleScope.launch {
             database.hikeDao().getAllHikes().collectLatest { hikes ->
@@ -63,11 +81,25 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Inflates the options menu for the main activity.
+     *
+     * @param menu The options menu in which items are placed.
+     * @return true to display the menu, false otherwise.
+     */
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.main_menu, menu)
         return true
     }
 
+    /**
+     * Handles selection of menu items in the options menu.
+     * Navigates to SearchActivity when search is selected,
+     * or shows the reset database dialog when reset is selected.
+     *
+     * @param item The menu item that was selected.
+     * @return true if the item was handled, false otherwise.
+     */
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.menu_search -> {
@@ -83,6 +115,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Shows a confirmation dialog for resetting the database.
+     * When confirmed, deletes all hikes from the database.
+     * This action cannot be undone.
+     */
     private fun showResetDatabaseDialog() {
         AlertDialog.Builder(this)
             .setTitle("Reset Database")
@@ -96,6 +133,11 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
+    /**
+     * Called when the activity resumes from a paused state.
+     * Reloads the hikes to ensure the list is up-to-date
+     * after returning from other activities.
+     */
     override fun onResume() {
         super.onResume()
         loadHikes()
